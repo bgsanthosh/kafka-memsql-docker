@@ -221,10 +221,11 @@ See the [wiki](https://github.com/wurstmeister/kafka-docker/wiki/ReleaseProcess)
 
 The ```docker-compose-memsql-single-broker.yml``` docker-compose file bring up kafka, zookeeper and memsql as part of the same docker network.
 
-Please make sure you have a memsql ```LICENSE_KEY```, before you run below command. We would need to export ```LICENSE_KEY``` as below
+Please make sure you have a memsql ```LICENSE_KEY```, before you run below command. Please visit memsql website to create free profile and ```LICENSE_KEY```.
+We would need to export ```LICENSE_KEY``` as below
 
 ```
-export LICENSE_KEY=[[YOUR LICENSE KEY]
+export LICENSE_KEY=[YOUR LICENSE KEY]
 ```
 
 Please run below ```docker-compose``` command.
