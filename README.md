@@ -216,3 +216,72 @@ See the [wiki](https://github.com/wurstmeister/kafka-docker/wiki/ReleaseProcess)
 ## Tutorial
 
 [http://wurstmeister.github.io/kafka-docker/](http://wurstmeister.github.io/kafka-docker/)
+
+## Kafka for MemSQL pipeline
+
+The ```docker-compose-memsql-single-broker.yml``` docker-compose file bring up kafka, zookeeper and memsql as part of the same docker network.
+
+Please make sure you have a memsql ```LICENSE_KEY```, before you run below command. We would need to export ```LICENSE_KEY``` as below
+
+```
+export LICENSE_KEY=[[YOUR LICENSE KEY]
+```
+
+Please run below ```docker-compose``` command.
+
+```
+docker-compose -f docker-compose-memsql-single-broker.yml up -d
+docker-compose -f docker-compose-memsql-single-broker.yml up -d memsql 
+```
+
+This should bring up kafka, zookeeper and memsql all in the same docker network.
+
+### Create Kafka Topic
+
+Exec into the Kafka docker container as below
+
+```
+docker exec -it <container-id> /bin/bash
+```
+
+Create the topic as below.
+```
+/opt/kafka/bin/kafka-topics.sh --zookeeper zookeeper:2181 --create --topic santhosh --partitions 1 --replication-factor 1
+```
+
+### Setup MemSQL pipeline
+
+Please login to memsql studio link at ```http://localhost:8080```. For more details, please refer to [this](https://docs.memsql.com/v6.8/guides/deploy-memsql/self-managed/memsql-tools/single-host/docker/step-3/#memsql-studio) link on how to launch memsql studio. Default username is ```root``` without any password.
+
+Run below command in memsql studio editor.
+
+```
+create database test;
+use test;
+CREATE TABLE test_table (c varchar(50));
+CREATE PIPELINE `test_kafka` AS LOAD DATA KAFKA 'kafka:9092/santhosh' INTO TABLE `test_table`;
+START PIPELINE `test_kafka`
+```
+
+### Produce Kafka Messages
+
+Exec into the Kafka docker container as below
+
+```
+docker exec -it <container-id> /bin/bash
+```
+
+Produce message as below.
+```
+/opt/kafka/bin/kafka-console-producer.sh --broker-list kafka:9092 --topic santhosh
+```
+
+Now go back to memsql studio UI and run ```select * from test_table```, you should be seeing the produced messages.
+
+### MemSQL monitoring
+
+MemSQL cluster by default provides prometheus exporter, please run below command to get the memsql metrics.
+
+```
+curl -XGET http://localhost:9104/metrics
+```
